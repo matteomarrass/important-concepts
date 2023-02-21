@@ -1,0 +1,83 @@
+
+Come funziona Linux
+
+
+
+
+
+Introduzione
+
+Per capire come funziona Linux, l’ideale è ricorrere all’astrazione e riportare il tutto a concetti basici, e da lì espandere.
+
+Si parte con uno schema a livelli, dall’hardware con i suoi componenti, che vengono gestiti dal Kernel di Linux, poi esso verrà gestito da una GUI, una shell oppure un server.
+
+L’hardware, con i suoi componenti (RAM, HDD, SSD, CPU etc…) immagazzina i dati ed esegue i calcoli.
+Il Kernel è il cuore del sistema operativo. Agendo da mediatore, esso gestisce l’hardware (specialmente la memoria principale) ed è l’interfaccia primaria che sta tra l’hardware e qualsiasi altro programma. I processi (i programmi che il kernel maneggia), raggruppati insieme creano lo spazio utente.
+
+Ci sono i processi Kernel e i processi utente, e tra di loro c’è una differenza critica: i processi Kernel non hanno alcuna limitazione, hanno accesso a memorie e memoria principale senza troppi problemi, i processi dell’utente no, e quasi qualsiasi errore può essere sistemato subito.
+Se un processo ha un errore, le conseguenze sono limitate e possono essere sistemate subito dal Kernel, quindi in teoria nessun processo utente può causare danni seri al sistema.
+Un utente non può eliminare il sistema operativo con permessi di base, però potrebbe farlo con privilegi più alti.
+
+Spiegazione basica alcuni concetti
+
+Memoria principale: una grande area con tanti 0 e 1. Ogni slot è chiamato ‘bit’. Quà risiede il kernel e i suoi processi, sono solo 0 e 1. Tutti i dispositivi periferici di input e output passano attraverso questa memoria.
+CPU: operatore di memoria, legge istruzioni di memoria e ritorna dati verso la memoria.
+Stato: particolare arrangiamenti di bit, es. 0001, 1011, 1110 rappresentano tutti stati diversi. Un singolo processo può avere a che fare con milioni di bit.
+
+Il Kernel
+
+Quasi tutto ciò con cui ha a che fare il Kernel, lo ha con la memoria principale.
+Il Kernel deve eseguire 4 Task principali in 4 aree:
+Processi: il Kernel deve decidere quali sono i processi che sono autorizzati a usare la CPU.
+Memoria: il Kernel deve tenere traccia di tutta la memoria, sapere dov’è allocata quella usata, sapere quanta è disponibile etc…
+Device: esso deve anche saper comunicare con dispositivi esterni o interni e garantire il loro corretto funzionamento.
+System calls: processi usano le chiamate di sistema per poter comunicare con il Kernel.
+
+Processi: La gestione dei processi descrive l’avvio, pausa, pianificazione e termine dei processi. In un sistema operativo moderno, sembra che tutti i processi vengono fatti eseguire in simultanea, ma non è così. Per esempio, ipotizziamo un sistema con una CPU single-core. Tanti processi sono in grado di utilizzare la sua potenza, solamente non viene data tutta insieme, viene data prima a un programma, poi inviata ad un’altro. Nel frattempo l’altro processo sarà messo in pausa. Ognuno usa la potenza della CPU a turno. L’atto di cambiare processo si chiama ‘context switch’ (commutazione di contesto).
+Ogni pezzo di tempo (chiamato ‘time slice’) da potenza al processo in modo da poter eseguire sufficienti computazioni, ed è impercettibile. Per questo sembra che il sistema stia eseguendo più applicazioni differenti anche se questo non è completamente vero.
+Il Kernel è responsabile di questa commutazione di contesto.
+Procedimento: 
+
+La CPU interrompe il processo corrente basato da un timer interno, passa in Kernel mode e riprende il controllo del Kernel.
+Kernel registra situazione attuale CPU e memoria, che sono essenziali per proseguire il processo che adesso è stato interrotto.
+Kernel finisce di raccogliere dati (raccolta dati input e output etc…)
+Kernel pronto per far avviare nuovo processo. Esso ora analizzerà i processi che sono pronti per essere avviati e ne sceglie uno.
+Kernel prepara memoria per il nuovo processo e anche la CPU.
+Kernel avvisa la CPU sul quanto tempo dovrà eseguire il nuovo processo.
+Kernel fa switch su modalità utente e usa la CPU per eseguire il nuovo processo.
+
+Invece con un sistema multi CPU, un processo può andare in contemporanea con un altro. Tuttavia per massimizzare l’utilizzo della CPU, si esegue lo stesso gioco del single-CPU.
+
+Gestione della memoria
+
+Il kernel deve maneggiare la memoria durante una commutazione di contesto.
+Il Kernel dovrebbe avere la sua area privata alla quale i processi utente non possono accedere.
+Ogni processo utente ha bisogno della sua memoria.
+Un processo non può accedere alla memoria privata di un altro processo.
+Processi utente possono condividere memoria.
+Il sistema può usare può memoria di quella presente sul disco usando lo spazio del disco come memoria ausiliaria.
+Driver e gestione dei device
+
+Il ruolo del Kernel quì è semplice.
+Un device tipicamente può accedere solamente in Kernel mode perchè un accesso improprio (ad esempio un processo utente che richiede di spegnere il pc) può far crashare la macchina.
+I driver sono tradizionalmente parte del Kernel stesso.
+
+Chiamate di sistema e supporto
+Un altra funzione abilitata per i processi utente sono le system calls (syscalls).
+Esse eseguono specifiche task che i processi utente possono non eseguire al meglio oppure non eseguire del tutto.
+Per esempio, gli atti di aprire, leggere e scrivere file richiedono tutti una chiamata di sistema.
+Due processi, fork() e exec() ci aiutano a capire bene:
+fork() = kernel crea una copia quasi identica del processo.
+exec() = kernel carica e fa partire il programma, rimpiazzando quello corrente.
+Apparte init, tutti i processi utente di Linux partono con fork() e, la maggior parte delle volte, si usa exec() per far partire un nuovo programma invece di far partire una copia del programma corrente.
+Esempio per il comando base LS =>
+
+Il kernel permette ai processi utenti anche di creare degli pseudo device.
+Sembrano dei device agli occhi dei processi utente, però sono interamente creati dai software.
+
+Utente
+Un utente è un entità che può possedere file e avviare processi. Generalmente gli viene associato un username.
+Il kernel non si basa sui numeri, ma su sequenze numeriche chiamate user ID.
+Un utente può modificare i propri processi ma non quelli degli altri. Inoltre può possedere dei file e può scegliere se metterli a disposizione degli altri utenti.
+
+Comandi Unix basici
